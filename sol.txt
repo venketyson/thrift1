@@ -1,0 +1,180 @@
+solution for 4.1
+
+
+
+
+Tvset.java
+
+package Mapreduce;
+
+
+
+
+import org.apache.hadoop.fs.Path;
+ 
+import org.apache.hadoop.conf.*;
+
+import org.apache.hadoop.mapreduce.Job;
+
+
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+ 
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+ 
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+ 
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+
+import org.apache.hadoop.io.IntWritable;
+
+import org.apache.hadoop.io.Text;
+
+
+public class Tvset
+ {
+	@SuppressWarnings("deprecation")
+	
+
+public static void main(String[] args) throws Exception 
+{
+		Configuration conf = new Configuration();
+
+		Job job = new Job(conf, "DemoTask1");
+
+		job.setJarByClass(Tvset.class);
+
+
+		job.setMapOutputKeyClass(IntWritable.class);
+
+		job.setMapOutputValueClass(Text.class);
+
+
+		job.setOutputKeyClass(IntWritable.class);
+
+		job.setOutputValueClass(Text.class);
+	
+	job.setMapperClass(Tvmap.class);
+	
+	job.setReducerClass(Tvreduce.class);
+	
+	 
+		job.setInputFormatClass(TextInputFormat.class);
+
+	
+	job.setOutputFormatClass(TextOutputFormat.class);
+
+	
+	FileInputFormat.addInputPath(job, new Path(args[0])); 
+
+		FileOutputFormat.setOutputPath(job,new Path(args[1]))
+;
+		
+		/*
+		Path out=new Path(args[1]);
+
+		out.getFileSystem(conf).delete(out);
+	
+	*/
+	
+	
+		job.waitForCompletion(true);
+
+	}
+}
+
+
+
+
+
+
+Tvmap.java
+
+
+
+
+package Mapreduce;
+
+
+
+import java.io.IOException;
+
+
+import org.apache.hadoop.io.IntWritable;
+
+import org.apache.hadoop.io.LongWritable;
+
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.*; 
+
+
+public class Tvmap extends Mapper<LongWritable, Text, IntWritable, Text>
+ {
+	public void map(LongWritable key, Text value, Context context) 
+			
+throws IOException, InterruptedException 
+{
+int label=0;
+		
+String[] lineArray = value.toString().split("|");
+
+   
+              for(String t : lineArray)
+{
+if(t.equals("NA"))
+{
+label=1;}
+}
+		
+
+		IntWritable k = new IntWritable(label);
+	
+	Text v = value
+;		
+		
+context.write(k,v);
+	}
+}
+
+
+
+
+
+
+Tvreduce.java
+
+
+
+
+
+
+package Mapreduce;
+
+
+
+import java.io.IOException;
+
+
+
+import org.apache.hadoop.io.Text;
+
+import org.apache.hadoop.io.IntWritable;
+
+import org.apache.hadoop.mapreduce.Reducer;
+
+
+public class Tvreduce extends Reducer<IntWritable, Text, IntWritable, Text>
+{
+	
+	public void reduce(IntWritable key, Iterable<Text> values,Context context) throws IOException, InterruptedException
+	
+{
+		
+if(key.equals("0")){
+		
+context.write(key, (Text) values);
+}
+	}
+}
+
+
+
